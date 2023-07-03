@@ -40,7 +40,8 @@ USERS = {
     'vaskalan': 'Vassilios',
     'pawbu': 'Pawel',
     'DanielElisenberg': 'Daniel',
-    'JoachimH99': 'Joachim'
+    'JoachimH99': 'Joachim',
+    'Recnoss':'Erik'
 }
 
 CONTRIBUTION_EVENTS = ['PushEvent', 'PullRequestEvent', 'IssuesEvent',
