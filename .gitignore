@@ -1,3 +1,6 @@
+# Ignor custom files
+S723*
+
 # Ignore compiled Python files
 *.pyc
 
