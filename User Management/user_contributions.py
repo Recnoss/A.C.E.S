@@ -73,13 +73,13 @@ def get_contributions_and_loc(username):
     response = requests.get(url, headers=HEADERS, timeout=10)
     events = response.json()
 
-    contribution_events = ['PushEvent', 'PullRequestEvent', 'IssuesEvent',
-                           'IssueCommentEvent', 'PullRequestReviewEvent', 
-                           'PullRequestReviewCommentEvent']
-
     contributions = 0
     loc_delta = 0
     repos_contributed_to = set()
+
+    contribution_events = ['PushEvent', 'PullRequestEvent', 'IssuesEvent',
+                           'IssueCommentEvent', 'PullRequestReviewEvent', 
+                           'PullRequestReviewCommentEvent']
     for event in events:
         # Convert event's 'created_at' date to datetime object
         event_date = datetime.strptime(event['created_at'], "%Y-%m-%dT%H:%M:%SZ")
@@ -101,7 +101,9 @@ def get_contributions_and_loc(username):
 
 # Calculate contributions and rank
 print("Fetching and calculating contributions and LoC delta for users from the last 30 days...")
+
 contributions = {name: get_contributions_and_loc(username) for username, name in users.items()}
+
 print("Done fetching contributions. Ranking users...\n")
 rankings = sorted(contributions.items(), key=lambda item: item[1][0], reverse=True)
 
@@ -110,7 +112,7 @@ current_month = datetime.now().strftime('%Y-%m')
 filename = f"S723 - GitHub Contributions - {current_month}.csv"
 
 # Write rankings to csv file
-with open(filename, 'w', newline='', encoding="None") as file:
+with open(filename, 'w', newline='', encoding="UTF-8") as file:
     writer = csv.writer(file)
     writer.writerow(["Ranking", "Username", "Contributions", "LoC Delta", "Repos"])
     for i, (name, contribution_data) in enumerate(rankings, 1):
