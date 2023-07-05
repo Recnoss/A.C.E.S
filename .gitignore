@@ -1,5 +1,8 @@
 # Ignor custom files
-S723*
+.csv
+
+#Ignore local Cache
+CACHE/
 
 # Ignore compiled Python files
 *.pyc

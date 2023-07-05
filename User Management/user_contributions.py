@@ -44,8 +44,9 @@ USERS = {
     'Recnoss':'Erik'
 }
 
-CONTRIBUTION_EVENTS = ['PushEvent', 'PullRequestEvent', 'IssuesEvent',
-                       'IssueCommentEvent', 'PullRequestReviewEvent',
+# Read more aboute the event types here: 
+# https://docs.github.com/en/webhooks-and-events/events/github-event-types
+CONTRIBUTION_EVENTS = ['PushEvent', 'PullRequestEvent', 'PullRequestReviewEvent',
                        'PullRequestReviewCommentEvent']
 
 # Check if the Github token is present
