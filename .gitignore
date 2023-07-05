@@ -1,5 +1,5 @@
 # Ignor custom files
-.csv
+*.csv
 
 #Ignore local Cache
 CACHE/
