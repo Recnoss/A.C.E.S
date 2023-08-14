@@ -92,7 +92,7 @@ Fetch and calculate contributions and Lines of Code (LoC) delta for a specific G
 
 This function sends multiple GET requests to the GitHub REST API to fetch all events 
 related to the user within the last 30 days. It then calculates the number of contributions
-(including commits, pull requests, issues reported, comments on issues, code reviews, 
+(including commits, pull requests, code reviews, 
 and comments on code reviews) and the LoC delta (total lines added minus total lines removed).
 
 Args:
@@ -108,7 +108,12 @@ Raises:
     HTTPError: If an HTTP error occurs during any of the requests.
     Exception: If an error occurs for a different reason during any of the requests.
 """
-    date_30_days_ago = datetime.now() - timedelta(days=30)
+  # Calculate the start and end date for the previous month based on current date
+    today = datetime.now()
+    first_day_of_current_month = datetime(today.year, today.month, 1)
+    last_day_of_previous_month = first_day_of_current_month - timedelta(days=1)
+    first_day_of_previous_month = datetime(last_day_of_previous_month.year, last_day_of_previous_month.month, 1)
+    
     contributions = 0
     lines_of_code_delta = 0
     repos_contributed_to = set()
@@ -122,9 +127,8 @@ Raises:
             break  # No more events
 
         for event in events:
-            event_date = datetime.strptime(
-                event['created_at'], "%Y-%m-%dT%H:%M:%SZ")
-            if event['type'] in CONTRIBUTION_EVENTS and event_date >= date_30_days_ago:
+            event_date = datetime.strptime(event['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+            if event['type'] in CONTRIBUTION_EVENTS and first_day_of_previous_month <= event_date < first_day_of_current_month:
                 contributions += 1
                 repos_contributed_to.add(event['repo']['name'])
                 if event['type'] == 'PushEvent':
@@ -161,7 +165,7 @@ def main():
     """
 
     # Calculate contributions and rank
-    print("Fetching and calculating contributions and LoC delta for users from the last 30 days...")
+    print("Fetching and calculating contributions and LoC delta for users from the previous month...")
 
     contributions = {name: get_contributions_and_loc(
         username) for username, name in USERS.items()}
@@ -171,8 +175,8 @@ def main():
                       key=lambda item: item[1][0], reverse=True)
 
     # Define csv filename
-    current_month = datetime.now().strftime('%Y-%m')
-    filename = f"S723 - GitHub Contributions - {current_month}.csv"
+    previous_month = (datetime.now().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
+    filename = f"S723 - GitHub Contributions - {previous_month}.csv"
 
     # Write rankings to csv file
     with open(filename, 'w', newline='', encoding="UTF-8") as file:
