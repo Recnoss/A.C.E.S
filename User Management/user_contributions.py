@@ -1,6 +1,8 @@
 """
+GitHub User Contributions Tracker
+
 This module fetches and calculates contributions and Lines of Code (LoC) delta 
-for a list of GitHub users over the last 30 days, and stores the results in a CSV file.
+for a list of GitHub users over the previous month, and stores the results in a CSV file.
 
 The contribution count includes events like commits, pull requests, issues reported,
 comments on issues, code reviews, and comments on code reviews. The LoC delta is 
@@ -9,189 +11,306 @@ calculated as the total number of lines added minus the total number of lines re
 This script uses the GitHub REST API v3 and requires a personal access token 
 stored in an environment variable 'GITHUB_TOKEN'.
 
-List of users to be analysed needs to be provided in the 'users' dictionary in the format:
-users = {'github_username': 'user_real_name', ...}
-
 Usage:
-    python3 user_contributions.py
+    python3 user_contributions.py [--config config.json]
 """
 
 import csv
+import json
+import logging
 import os
+import time
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, List, Tuple, Optional, Any
+
 import requests
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, RequestException
 
-# Constants
-ORG_NAME = "statisticsnorway"
-TOKEN = os.getenv('GITHUB_TOKEN')
-HEADERS = {
-    'Authorization': f'token {TOKEN}',
-    'Accept': 'application/vnd.github+json',
-}
-USERS = {
-    'johnnadeluy': 'Johnnadel',
-    'ssb-cgn': 'Carina',
-    'Glenruben': 'Glenruben',
-    'omsaggau': 'Ole',
-    'oyessb': 'Oyvind',
-    'JohannesFinsveen': 'Johannes',
-    'PerIngeVaaje': 'Per Inge',
-    'vaskalan': 'Vassilios',
-    'pawbu': 'Pawel',
-    'DanielElisenberg': 'Daniel',
-    'JoachimH99': 'Joachim',
-    'Recnoss':'Erik'
-}
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('user_contributions.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
-# Read more aboute the event types here: 
-# https://docs.github.com/en/webhooks-and-events/events/github-event-types
-CONTRIBUTION_EVENTS = ['PushEvent', 'PullRequestEvent', 'PullRequestReviewEvent',
-                       'PullRequestReviewCommentEvent']
-
-# Check if the Github token is present
-if TOKEN is None:
-    raise ValueError("Please set the 'GITHUB_TOKEN' environment variable.")
-
-
-def fetch_data_from_url(url):
-    """
-    Fetch JSON data from a specified URL.
-
-    This function sends a GET request to the provided URL and returns the 
-    response as a JSON object. If the request is unsuccessful (either due 
-    to an HTTP error or another exception), an appropriate error message is printed 
-    and the function returns None.
-
-    Args:
-        url (str): The URL from which to fetch data.
-
-    Returns:
-        dict: The JSON response from the URL if the request is successful, 
-              None otherwise.
-
-    Raises:
-        HTTPError: If an HTTP error occurs.
-        Exception: If an error occurs for a different reason.
-    """
-    try:
-        response = requests.get(url, headers=HEADERS, timeout=10)
-        response.raise_for_status()
-        return response.json()
-    except HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")
-        return None
-    except Exception as err:
-        print(f"Other error occurred: {err}")
-        return None
-
-
-def get_contributions_and_loc(username):
-    """
-Fetch and calculate contributions and Lines of Code (LoC) delta for a specific GitHub user.
-
-This function sends multiple GET requests to the GitHub REST API to fetch all events 
-related to the user within the last 30 days. It then calculates the number of contributions
-(including commits, pull requests, code reviews, 
-and comments on code reviews) and the LoC delta (total lines added minus total lines removed).
-
-Args:
-    username (str): The GitHub username of the user.
-
-Returns:
-    tuple: A tuple containing:
-        contributions (int): The total number of contributions.
-        loc_delta (int): The LoC delta.
-        repos_contributed_to (list): The list of repos the user contributed to.
-
-Raises:
-    HTTPError: If an HTTP error occurs during any of the requests.
-    Exception: If an error occurs for a different reason during any of the requests.
-"""
-  # Calculate the start and end date for the previous month based on current date
-    today = datetime.now()
-    first_day_of_current_month = datetime(today.year, today.month, 1)
-    last_day_of_previous_month = first_day_of_current_month - timedelta(days=1)
-    first_day_of_previous_month = datetime(last_day_of_previous_month.year, last_day_of_previous_month.month, 1)
+class GitHubContributionsTracker:
+    """Tracks GitHub user contributions and generates reports."""
     
-    contributions = 0
-    lines_of_code_delta = 0
-    repos_contributed_to = set()
-    page = 1
+    # Default configuration
+    DEFAULT_CONFIG = {
+        "org_name": "statisticsnorway",
+        "users": {
+            'johnnadeluy': 'Johnnadel',
+            'ssb-cgn': 'Carina',
+            'Glenruben': 'Glenruben',
+            'omsaggau': 'Ole',
+            'oyessb': 'Oyvind',
+            'JohannesFinsveen': 'Johannes',
+            'PerIngeVaaje': 'Per Inge',
+            'vaskalan': 'Vassilios',
+            'pawbu': 'Pawel',
+            'DanielElisenberg': 'Daniel',
+            'JoachimH99': 'Joachim',
+            'Recnoss': 'Erik'
+        },
+        "contribution_events": [
+            'PushEvent', 'PullRequestEvent', 'PullRequestReviewEvent',
+            'PullRequestReviewCommentEvent'
+        ],
+        "max_pages": 10,
+        "rate_limit_sleep": 60
+    }
+    
+    def __init__(self, config_file: Optional[str] = None):
+        """Initialize the contributions tracker.
+        
+        Args:
+            config_file: Optional path to configuration file
+        """
+        self.config = self._load_config(config_file)
+        self.token = self._get_github_token()
+        self.headers = {
+            'Authorization': f'token {self.token}',
+            'Accept': 'application/vnd.github+json',
+        }
+        self.session = requests.Session()
+        self.session.headers.update(self.headers)
+        
+    def _load_config(self, config_file: Optional[str]) -> Dict[str, Any]:
+        """Load configuration from file or use defaults."""
+        if config_file and Path(config_file).exists():
+            try:
+                with open(config_file, 'r') as f:
+                    user_config = json.load(f)
+                    config = self.DEFAULT_CONFIG.copy()
+                    config.update(user_config)
+                    return config
+            except (json.JSONDecodeError, IOError) as e:
+                logger.warning(f"Error loading config file {config_file}: {e}")
+                logger.info("Using default configuration")
+        return self.DEFAULT_CONFIG.copy()
+    
+    def _get_github_token(self) -> str:
+        """Get GitHub token from environment variable."""
+        token = os.getenv('GITHUB_TOKEN')
+        if not token:
+            raise ValueError("Please set the 'GITHUB_TOKEN' environment variable.")
+        return token
 
-    while True:
-        url = f"https://api.github.com/users/{username}/events?page={page}"
-        events = fetch_data_from_url(url)
 
-        if not events:
-            break  # No more events
+    def _handle_rate_limit(self, response: requests.Response) -> None:
+        """Handle GitHub rate limiting."""
+        if response.status_code == 403 and 'rate limit' in response.text.lower():
+            reset_time = response.headers.get('X-RateLimit-Reset')
+            if reset_time:
+                wait_time = int(reset_time) - int(time.time()) + 10
+                logger.warning(f"Rate limit exceeded. Waiting {wait_time} seconds.")
+                time.sleep(max(wait_time, self.config['rate_limit_sleep']))
+            else:
+                logger.warning(f"Rate limit exceeded. Waiting {self.config['rate_limit_sleep']} seconds.")
+                time.sleep(self.config['rate_limit_sleep'])
+    
+    def _fetch_data_from_url(self, url: str, max_retries: int = 3) -> Optional[Dict[str, Any]]:
+        """Fetch JSON data from a specified URL with retry logic.
 
-        for event in events:
-            event_date = datetime.strptime(event['created_at'], "%Y-%m-%dT%H:%M:%SZ")
-            if event['type'] in CONTRIBUTION_EVENTS and first_day_of_previous_month <= event_date < first_day_of_current_month:
-                contributions += 1
-                repos_contributed_to.add(event['repo']['name'])
-                if event['type'] == 'PushEvent':
-                    for commit in event['payload']['commits']:
-                        commit_url = commit['url']
-                        commit_data = fetch_data_from_url(commit_url)
-                        if commit_data:
-                            lines_of_code_delta += commit_data['stats']['additions']
-                            lines_of_code_delta -= commit_data['stats']['deletions']
+        Args:
+            url: The URL from which to fetch data
+            max_retries: Maximum number of retry attempts
 
-        page += 1  # Go to next page
+        Returns:
+            JSON response as dictionary if successful, None otherwise
+        """
+        for attempt in range(max_retries):
+            try:
+                response = self.session.get(url, timeout=30)
+                
+                if response.status_code == 403:
+                    self._handle_rate_limit(response)
+                    continue
+                    
+                response.raise_for_status()
+                return response.json()
+                
+            except HTTPError as e:
+                logger.error(f"HTTP error on attempt {attempt + 1}: {e}")
+                if attempt == max_retries - 1:
+                    return None
+                time.sleep(2 ** attempt)  # Exponential backoff
+                
+            except (RequestException, json.JSONDecodeError) as e:
+                logger.error(f"Request error on attempt {attempt + 1}: {e}")
+                if attempt == max_retries - 1:
+                    return None
+                time.sleep(2 ** attempt)
+                
+        return None
 
-    return contributions, lines_of_code_delta, list(repos_contributed_to)
+
+    def _get_date_range(self) -> Tuple[datetime, datetime]:
+        """Get the date range for the previous month."""
+        today = datetime.now()
+        first_day_of_current_month = datetime(today.year, today.month, 1)
+        last_day_of_previous_month = first_day_of_current_month - timedelta(days=1)
+        first_day_of_previous_month = datetime(
+            last_day_of_previous_month.year, 
+            last_day_of_previous_month.month, 
+            1
+        )
+        return first_day_of_previous_month, first_day_of_current_month
+    
+    def get_user_contributions(self, username: str) -> Tuple[int, int, List[str]]:
+        """Fetch and calculate contributions and LoC delta for a GitHub user.
+
+        Args:
+            username: The GitHub username
+
+        Returns:
+            Tuple containing:
+                - contributions count
+                - lines of code delta 
+                - list of repositories contributed to
+        """
+        logger.info(f"Fetching contributions for user: {username}")
+        
+        start_date, end_date = self._get_date_range()
+        contributions = 0
+        lines_of_code_delta = 0
+        repos_contributed_to = set()
+        page = 1
+        
+        while page <= self.config['max_pages']:
+            url = f"https://api.github.com/users/{username}/events?page={page}&per_page=100"
+            events = self._fetch_data_from_url(url)
+
+            if not events:
+                break
+
+            # Check if we've gone beyond our date range
+            if events and len(events) > 0:
+                last_event_date = datetime.strptime(events[-1]['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+                if last_event_date < start_date:
+                    break
+
+            for event in events:
+                event_date = datetime.strptime(event['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+                
+                # Skip events outside our date range
+                if not (start_date <= event_date < end_date):
+                    continue
+                    
+                if event['type'] in self.config['contribution_events']:
+                    contributions += 1
+                    repos_contributed_to.add(event['repo']['name'])
+                    
+                    if event['type'] == 'PushEvent':
+                        self._process_push_event(event, username)
+                        lines_of_code_delta += self._calculate_loc_delta(event)
+
+            page += 1
+
+        logger.info(f"User {username}: {contributions} contributions, {lines_of_code_delta} LoC delta")
+        return contributions, lines_of_code_delta, list(repos_contributed_to)
+    
+    def _process_push_event(self, event: Dict[str, Any], username: str) -> None:
+        """Process push event for additional metrics if needed."""
+        # This method can be extended for additional push event processing
+        pass
+    
+    def _calculate_loc_delta(self, event: Dict[str, Any]) -> int:
+        """Calculate lines of code delta for a push event."""
+        loc_delta = 0
+        if event['type'] == 'PushEvent':
+            for commit in event.get('payload', {}).get('commits', []):
+                commit_url = commit.get('url')
+                if commit_url:
+                    commit_data = self._fetch_data_from_url(commit_url)
+                    if commit_data and 'stats' in commit_data:
+                        loc_delta += commit_data['stats'].get('additions', 0)
+                        loc_delta -= commit_data['stats'].get('deletions', 0)
+        return loc_delta
 
 
+
+    def generate_report(self) -> str:
+        """Generate contributions report for all configured users."""
+        logger.info("Starting contributions analysis...")
+        
+        contributions = {}
+        for username, display_name in self.config['users'].items():
+            try:
+                contrib_data = self.get_user_contributions(username)
+                contributions[display_name] = contrib_data
+            except Exception as e:
+                logger.error(f"Failed to get contributions for {username}: {e}")
+                contributions[display_name] = (0, 0, [])
+        
+        # Sort by contribution count
+        rankings = sorted(
+            contributions.items(),
+            key=lambda item: item[1][0], 
+            reverse=True
+        )
+        
+        # Generate filename
+        previous_month = (datetime.now().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
+        filename = f"{self.config['org_name']} - GitHub Contributions - {previous_month}.csv"
+        
+        # Write CSV report
+        self._write_csv_report(filename, rankings)
+        
+        logger.info(f"Report generated successfully: {filename}")
+        return filename
+    
+    def _write_csv_report(self, filename: str, rankings: List[Tuple[str, Tuple[int, int, List[str]]]]) -> None:
+        """Write the contributions report to CSV file."""
+        try:
+            with open(filename, 'w', newline='', encoding='utf-8') as file:
+                writer = csv.writer(file)
+                writer.writerow(["Ranking", "Username", "Contributions", "LoC Delta", "Repos"])
+                
+                for i, (name, contribution_data) in enumerate(rankings, 1):
+                    contributions_count, loc_delta, repos = contribution_data
+                    writer.writerow([
+                        i, 
+                        name, 
+                        contributions_count,
+                        loc_delta, 
+                        ', '.join(repos[:10])  # Limit repo list length
+                    ])
+                    
+                    if contributions_count > 250:
+                        logger.warning(
+                            f"{name} has over 250 events. Some events may not be included."
+                        )
+        except IOError as e:
+            logger.error(f"Failed to write CSV file {filename}: {e}")
+            raise
 
 def main():
-    """
-    Fetch, calculate and store contributions and Lines of Code delta for a list of GitHub users.
-
-    This function gets contributions and LoC delta for a list of GitHub users over the 
-    last 30 days using the GitHub REST API. Results are sorted in descending order of contributions, 
-    and then written to a CSV file named "S723 - GitHub Contributions - {current_month}.csv".
-
-    If a user has more than 250 events, a warning message will be printed, as GitHub's APIs have 
-    some limitations on the number of events returned.
-
-    Note: This function requires a 'GITHUB_TOKEN' environment variable set localy.
-    It also uses a predefined USERS dictionary that maps GitHub usernames to their 
-    corresponding real names.
-
-    Raises:
-        ValueError: If 'GITHUB_TOKEN' environment variable is not set.
-    """
-
-    # Calculate contributions and rank
-    print("Fetching and calculating contributions and LoC delta for users from the previous month...")
-
-    contributions = {name: get_contributions_and_loc(
-        username) for username, name in USERS.items()}
-
-    print("Done fetching contributions. Ranking users...\n")
-    rankings = sorted(contributions.items(),
-                      key=lambda item: item[1][0], reverse=True)
-
-    # Define csv filename
-    previous_month = (datetime.now().replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
-    filename = f"S723 - GitHub Contributions - {previous_month}.csv"
-
-    # Write rankings to csv file
-    with open(filename, 'w', newline='', encoding="UTF-8") as file:
-        writer = csv.writer(file)
-        writer.writerow(
-            ["Ranking", "Username", "Contributions", "LoC Delta", "Repos"])
-        for i, (name, contribution_data) in enumerate(rankings, 1):
-            contributions_count, loc_delta, repos = contribution_data
-            writer.writerow([i, name, contributions_count,
-                            loc_delta, ', '.join(repos)])
-            if contributions_count > 250:
-                print(
-                    f"WARNING: {name} has over 250 events. Not all events may be included.")
-    print(f"Rankings successfully written to {filename}")
-
+    """Main function to run the contributions tracker."""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Track GitHub user contributions')
+    parser.add_argument(
+        '--config', 
+        type=str, 
+        help='Path to configuration file'
+    )
+    args = parser.parse_args()
+    
+    try:
+        tracker = GitHubContributionsTracker(args.config)
+        filename = tracker.generate_report()
+        print(f"Report generated: {filename}")
+        
+    except Exception as e:
+        logger.error(f"Error running contributions tracker: {e}")
+        raise
 
 if __name__ == "__main__":
     main()
