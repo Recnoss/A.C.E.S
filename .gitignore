@@ -44,7 +44,7 @@ venv.bak/
 .project
 .pydevproject
 .settings/
-.txt
+*.txt
 .csv
 
 # OS generated files
