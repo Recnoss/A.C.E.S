@@ -19,12 +19,46 @@ The repository is organized into different categories based on the nature of the
 
 ## Features
 
-- User Management: Scripts and tools to automate user provisioning, deprovisioning, and user access control.
-- Report Generation: Code snippets to generate customized reports based on specific requirements.
-- Data Analysis: Tools for analyzing data sets and generating insights for decision-making.
-- Task Automation: Scripts to automate repetitive tasks, reducing manual effort and increasing efficiency.
-- Security: Best practices and guidelines for ensuring the security of administrative systems.
-- Troubleshooting: Troubleshooting scripts and snippets to diagnose and resolve common issues.
+- **User Management**: Advanced GitHub contribution tracking with gamification, user analytics, and organizational metrics
+- **Security**: Vulnerability tracking and visualization tools with comprehensive reporting
+- **Data Analysis**: Tools for analyzing data sets and generating insights for decision-making
+- **Report Generation**: Custom report generation tools with CSV export capabilities
+- **Task Automation**: Scripts to automate repetitive tasks, reducing manual effort and increasing efficiency
+
+### 🚀 **New: Advanced GitHub Contribution Tracker**
+
+The latest addition to A.C.E.S is a comprehensive GitHub contribution tracking system with:
+
+#### **Key Features:**
+- **Multi-source Data**: GraphQL API + REST API fallback for comprehensive data
+- **Smart Caching**: 24-hour file-based cache for improved performance
+- **Flexible Time Ranges**: Last N days or quarterly tracking (Q1, Q2, Q3, Q4)
+- **Real-time Progress**: Visual progress bar with user feedback
+- **Gamification System**: Points-based scoring for commits, PRs, reviews, and collaboration
+- **Dynamic Leaderboards**: Top 100 users with full name support
+- **Error Handling**: Comprehensive error reporting with HTTP status meanings
+
+#### **Gamification Scoring:**
+- **Commits**: 2 points each (capped at 100)
+- **Pull Requests**: 5 points + merge rate bonus (up to 20 points)
+- **Code Reviews**: 3 points each + 1 point per review comment
+- **Collaboration**: Bonus points for helping team members
+- **Consistency**: Regular activity bonuses
+
+#### **Usage Examples:**
+```bash
+# Track last 30 days (default)
+python "User Management/advanced_contribution_tracker.py"
+
+# Track last 90 days
+python "User Management/advanced_contribution_tracker.py" --days 90
+
+# Track Q1 2025
+python "User Management/advanced_contribution_tracker.py" --quarter Q1-2025
+
+# Clear cache and run fresh
+python "User Management/advanced_contribution_tracker.py" --clear-cache
+```
 
 ## Installation
 
@@ -33,9 +67,29 @@ The repository is organized into different categories based on the nature of the
    ```shell
    git clone https://github.com/your-username/aces.git
    ```
-2. Ensure you have the required dependencies installed as mentioned in the individual script's documentation.
 
-3. Customize the scripts and snippets to match your specific needs.
+2. Set up Python virtual environment and install dependencies:
+
+   ```bash
+   # Create and activate virtual environment
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   
+   # Install required packages
+   pip install -r requirements.txt
+   ```
+
+3. Set up environment variables (for GitHub tracking):
+
+   ```bash
+   # Set GitHub token for API access
+   export GITHUB_TOKEN=your_github_token_here
+   
+   # Or create a .env file in the project root
+   echo "GITHUB_TOKEN=your_github_token_here" > .env
+   ```
+
+4. Customize the scripts and configuration files to match your specific needs.
 
 ## Usage
 Navigate to the desired category or specific task folder in the repository.
