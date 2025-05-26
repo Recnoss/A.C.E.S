@@ -44,6 +44,8 @@ venv.bak/
 .project
 .pydevproject
 .settings/
+.txt
+.csv
 
 # OS generated files
 .DS_Store
