@@ -13,18 +13,17 @@ A.C.E.S (Admin Control and Efficiency Suite) is a personal collection of scripts
 
 ## Introduction
 
-A.C.E.S focuses on **GitHub Contribution Analytics**, providing powerful tools to track individual and team productivity across GitHub organizations. Whether you need to measure developer performance, analyze team collaboration patterns, or generate contribution reports, A.C.E.S delivers comprehensive insights with advanced gamification scoring.
+As an administrator or someone involved in training activities, you often encounter repetitive tasks that can be time-consuming and error-prone. A.C.E.S aims to address these challenges by providing a comprehensive suite of scripts and code snippets that automate common administrative tasks, improve efficiency, and promote control.
+
+The repository is organized into different categories based on the nature of the tasks they help with. Whether you need to automate user management, generate reports, or perform data analysis, A.C.E.S has you covered.
 
 ## Features
 
-A.C.E.S is now focused on **GitHub Contribution Analytics** with these core capabilities:
-
-- **Individual Contribution Tracking**: Advanced GitHub user analytics with gamification scoring
-- **Team-Based Analytics**: Aggregate team performance with configurable team filtering  
-- **Multi-Organization Support**: Track contributions across multiple GitHub organizations
-- **Smart Caching**: File-based caching system for improved performance and reduced API calls
-- **Flexible Time Ranges**: Daily, quarterly, and custom date range tracking
-- **Comprehensive Export**: CSV exports with detailed metrics and rankings
+- **User Management**: Advanced GitHub contribution tracking with gamification, user analytics, and organizational metrics
+- **Security**: Vulnerability tracking and visualization tools with comprehensive reporting
+- **Data Analysis**: Tools for analyzing data sets and generating insights for decision-making
+- **Report Generation**: Custom report generation tools with CSV export capabilities
+- **Task Automation**: Scripts to automate repetitive tasks, reducing manual effort and increasing efficiency
 
 ### 🚀 **New: Advanced GitHub Contribution & Team Tracking**
 
@@ -138,26 +137,6 @@ python "User Management/advanced_contribution_tracker.py" --clear-cache
    python "User Management/team_contribution_tracker.py" --days 7
    ```
 
-**📖 Follow the setup steps above to get started quickly**
-
-## 📁 Project Structure
-
-```
-A.C.E.S/
-├── 📊 User Management/                    # GitHub contribution tracking and analytics
-│   ├── advanced_contribution_tracker.py  # Individual contributor tracking
-│   ├── team_contribution_tracker.py      # Team-based contribution tracking
-│   └── ReadMe.md                          # User Management documentation
-├── 📁 data/                              # Data storage directory
-├── 🗂️ CACHE/                             # File-based cache for API responses (auto-generated)
-├── 🐍 venv/                              # Python virtual environment
-├── 📄 config.json                        # Main configuration file (users + teams)
-├── 📄 requirements.txt                   # Python dependencies
-├── 📄 CLAUDE.md                          # AI assistant instructions
-├── 📄 LICENSE                            # MIT License
-└── 📄 README.md                          # This file
-```
-
 ## 🔒 Security & Privacy
 
 **⚠️ This repository is PUBLIC** - strict security measures are in place:
@@ -174,13 +153,12 @@ The A.C.E.S repository is licensed under the [MIT License](LICENSE). You are fre
 ## 🎯 Project Goals
 
 A.C.E.S aims to:
-- **Measure** individual and team GitHub contribution patterns
-- **Enhance** developer productivity through gamified analytics
-- **Identify** collaboration opportunities and team dynamics
-- **Provide** actionable insights for engineering management
-- **Support** fair and comprehensive performance evaluation
-- **Maintain** security and privacy standards for organizational data
+- **Automate** repetitive administrative tasks
+- **Enhance** team productivity through data-driven insights  
+- **Streamline** organizational workflows
+- **Provide** actionable analytics for decision-making
+- **Maintain** security and privacy standards
 
 ---
 
-**With A.C.E.S, gain insights into your development team's productivity and collaboration patterns. Happy analyzing! 🎉**
+**With A.C.E.S, take control of your administrative tasks, improve efficiency, and streamline your workflow. Happy automating! 🎉**
