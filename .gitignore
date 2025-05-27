@@ -10,9 +10,9 @@
 
 # PII and Sensitive Configuration Files
 # =====================================
-config.json                    # Contains real usernames and names - NEVER commit
-
-
+config.json
+CLAUDE.md
+config.json
 
 # API and Cache Data
 # ==================
@@ -145,5 +145,4 @@ secrets.json
 # =============================================================================
 # END .gitignore
 # =============================================================================
-CLAUDE.md
-config.json
+
