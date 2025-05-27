@@ -74,6 +74,7 @@ lib64/
 .settings/                     # Eclipse settings
 *.sublime-project              # Sublime Text project files
 *.sublime-workspace            # Sublime Text workspace files
+CLAUDE.md                      # Antropic Clauds operating instructions. 
 
 # Operating System
 # ================
