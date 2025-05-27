@@ -16,10 +16,10 @@ This script provides comprehensive tracking of GitHub contributions with enhance
 
 3. **Gamification System:**
    - Commits: 2 points each (capped at 100)
-   - Pull Requests: 5 points + merge rate bonus
-   - Code Reviews: 3 points + comment engagement
-   - Collaboration score based on helping others
-   - Consistency bonus for regular activity
+   - Pull Requests: 5 points + up to 20 merge rate bonus
+   - Code Reviews: 3 points each + 1 per comment
+   - Collaboration: Bonus points for active reviewing (10-35 points)
+   - Consistency: 8 points per contribution type (max 24)
 
 4. **Features:**
    - Real-time progress bar with user feedback
@@ -455,14 +455,27 @@ class AdvancedContributionTracker:
         # Review scoring (helping others is valuable)
         metrics.reviews_score = (metrics.reviews_given * 3) + (metrics.review_comments * 1)
         
-        # Collaboration score (reviews + comments + helping others)
-        metrics.collaboration_score = metrics.reviews_score
+        # Collaboration score (cross-repository engagement bonus)
+        # Award additional points for diverse collaboration beyond basic reviews
+        collaboration_bonus = 0
+        if metrics.reviews_given > 5:  # Active reviewer bonus
+            collaboration_bonus += 10
+        if metrics.review_comments > 20:  # Detailed feedback bonus
+            collaboration_bonus += 15
+        if metrics.prs_opened > 0 and metrics.reviews_given > 0:  # Well-rounded contributor
+            collaboration_bonus += 10
+        metrics.collaboration_score = collaboration_bonus
         
-        # Consistency score (regular activity vs bursts)
-        # This would need historical data to calculate properly
-        metrics.consistency_score = min(metrics.commits_count * 0.5, 25)  # Simplified version
+        # Consistency score (independent of other metrics to avoid double counting)
+        # Award points for balanced activity across different contribution types
+        activity_types = sum([
+            1 if metrics.commits_count > 0 else 0,
+            1 if metrics.prs_opened > 0 else 0,
+            1 if metrics.reviews_given > 0 else 0
+        ])
+        metrics.consistency_score = activity_types * 8  # Up to 24 points for all three types
         
-        # Total gamification score
+        # Total gamification score (no double counting)
         metrics.total_score = (
             metrics.commits_score +
             metrics.pr_score +
@@ -609,10 +622,10 @@ class AdvancedContributionTracker:
         
         print("\n📊 Scoring Breakdown:")
         print("• Commits: 2 points each (max 100)")
-        print("• PRs: 5 points + 20 bonus for high merge rate")
+        print("• PRs: 5 points + up to 20 bonus for high merge rate")
         print("• Reviews: 3 points each + 1 per comment")
-        print("• Collaboration: Reviews + comments")
-        print("• Consistency: Regular activity bonus")
+        print("• Collaboration: Bonus points for active reviewing (10-35 points)")
+        print("• Consistency: 8 points per contribution type (max 24)")
 
 def main():
     """Main execution function"""
