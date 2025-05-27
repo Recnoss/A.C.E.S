@@ -11,8 +11,8 @@
 # PII and Sensitive Configuration Files
 # =====================================
 config.json                    # Contains real usernames and names - NEVER commit
-User Management/config.json    # User config in User Management folder - NEVER commit
-**/config.json                 # Any config.json file anywhere - NEVER commit
+
+
 
 # API and Cache Data
 # ==================

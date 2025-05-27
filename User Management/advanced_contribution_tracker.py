@@ -230,9 +230,10 @@ class AdvancedContributionTracker:
     def load_users_config(self) -> Dict[str, str]:
         """Load user configuration from config.json"""
         try:
-            # Get the directory where this script is located
+            # Get the parent directory (root of the project)
             script_dir = os.path.dirname(os.path.abspath(__file__))
-            config_path = os.path.join(script_dir, 'config.json')
+            root_dir = os.path.dirname(script_dir)
+            config_path = os.path.join(root_dir, 'config.json')
             
             with open(config_path, 'r') as f:
                 config = json.load(f)
