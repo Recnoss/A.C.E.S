@@ -56,8 +56,8 @@ The latest addition to A.C.E.S includes both individual and team-based GitHub co
 #### **Multi-Organization Support:**
 ```bash
 # Set up multiple organizations
-export GITHUB_ORG=statisticsnorway
-export GITHUB_ORG_2=PxTools
+export GITHUB_ORG=my_primary_org
+export GITHUB_ORG_2=my_secondary_org
 
 # Individual tracking across both orgs
 python "User Management/advanced_contribution_tracker.py" --days 30
@@ -66,17 +66,6 @@ python "User Management/advanced_contribution_tracker.py" --days 30
 python "User Management/team_contribution_tracker.py" --days 30
 ```
 
-#### **Team Configuration Example:**
-```json
-{
-  "teams": {
-    "ssbno-developers": "Team SSB.no",
-    "microdata-developers": "Team Microdata", 
-    "statbank-developers": "Team Statistikkbanken",
-    "statbank-utviklere": "Legacy Statbank"
-  }
-}
-```
 
 #### **Usage Examples:**
 ```bash
@@ -125,9 +114,6 @@ python "User Management/advanced_contribution_tracker.py" --clear-cache
    export GITHUB_ORG=your_primary_org
    export GITHUB_ORG_2=your_secondary_org  # Optional
    
-   # Set up configuration files  
-   cp config.json.template config.json
-   # Edit config.json with your users and teams
    ```
 
 4. **Configure teams and users in config.json:**
@@ -160,8 +146,7 @@ A.C.E.S/
 ├── 📊 User Management/           # GitHub contribution tracking and analytics
 │   ├── advanced_contribution_tracker.py  # Individual contributor tracking
 │   ├── team_contribution_tracker.py      # Team-based contribution tracking
-│   └── ReadMe.md                          # User Management documentation
-├── 🔒 Security/                  # Vulnerability tracking and security tools
+├── 🔒 Security/                 # Vulnerability tracking and security tools
 ├── 📈 Data Analysis/            # Data processing and analysis utilities
 ├── 📋 Report Generation/        # Custom report generation tools
 ├── 🤖 Task Automation/          # General automation scripts
@@ -171,10 +156,8 @@ A.C.E.S/
 │   ├── SECURITY.md              # Security policies
 │   └── CHANGELOG.md             # Version history
 └── 🔧 Configuration/
-    ├── config.json.template     # Configuration template (users + teams)
     ├── requirements.txt         # Python dependencies
-    ├── CLAUDE.md                # AI assistant instructions
-    └── .gitignore              # Protects sensitive data
+    └── .gitignore               # Protects sensitive data
 ```
 
 ## 🔒 Security & Privacy
@@ -184,22 +167,7 @@ A.C.E.S/
 - **PII Protection**: All personal data is excluded via .gitignore
 - **Template System**: Example configurations use fictional data
 - **Environment Variables**: Sensitive tokens stored locally only
-- **Comprehensive Documentation**: Security guidelines in [SECURITY.md](SECURITY.md)
 
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for:
-- Development setup instructions
-- Code style and standards
-- Security requirements
-- Pull request process
-
-## 📞 Support
-
-- **📖 Documentation**: Check [SETUP.md](SETUP.md) for detailed instructions
-- **🐛 Issues**: Report bugs via GitHub Issues
-- **💬 Discussions**: Ask questions in GitHub Discussions
-- **🔒 Security**: Email security concerns privately (see [SECURITY.md](SECURITY.md))
 
 ## 📄 License
 
@@ -214,24 +182,6 @@ A.C.E.S aims to:
 - **Provide** actionable analytics for decision-making
 - **Maintain** security and privacy standards
 
-## 🚀 What's Next?
-
-- ✅ **Team-based contribution tracking** (Recently Added!)
-- ✅ **Multi-organization support** (Recently Added!)
-- ✅ **Improved scoring system** (Recently Added!)
-- Enhanced visualization dashboards
-- Historical trend analysis
-- Automated report scheduling
-- Integration with other productivity tools
-- Team collaboration heat maps
-
 ---
 
 **With A.C.E.S, take control of your administrative tasks, improve efficiency, and streamline your workflow. Happy automating! 🎉**
-
-## 📊 Repository Stats
-
-![GitHub stars](https://img.shields.io/github/stars/your-username/A.C.E.S?style=social)
-![GitHub forks](https://img.shields.io/github/forks/your-username/A.C.E.S?style=social)
-![GitHub issues](https://img.shields.io/github/issues/your-username/A.C.E.S)
-![GitHub license](https://img.shields.io/github/license/your-username/A.C.E.S)
