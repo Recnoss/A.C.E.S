@@ -29,7 +29,15 @@ This script provides comprehensive tracking of GitHub contributions with enhance
    - CSV export with detailed metrics
    - Full name support from user configuration
 
+5. **Configuration:**
+   - Set GITHUB_TOKEN environment variable for authentication
+   - Set GITHUB_ORG environment variable for organization (default: statisticsnorway)
+   - Users and their full names are configured in config.json
+
 Usage Examples:
+    export GITHUB_TOKEN=your_token_here
+    export GITHUB_ORG=your_org_name  # Optional, defaults to statisticsnorway
+    
     python advanced_contribution_tracker.py                    # Last 30 days
     python advanced_contribution_tracker.py --days 90          # Last 90 days
     python advanced_contribution_tracker.py --quarter Q1-2025  # Q1 2025
@@ -50,7 +58,7 @@ import hashlib
 import pickle
 
 # Configuration Constants
-ORG_NAME = "statisticsnorway"  # GitHub organization name
+ORG_NAME = os.getenv('GITHUB_ORG', 'statisticsnorway')  # GitHub organization name from env variable
 CACHE_DIR = "CACHE"            # Directory for file-based cache storage
 CACHE_EXPIRY_HOURS = 24        # Cache expiry time in hours
 memory = Memory(CACHE_DIR, verbose=0)  # Legacy joblib memory (kept for compatibility)
@@ -222,26 +230,16 @@ class AdvancedContributionTracker:
     def load_users_config(self) -> Dict[str, str]:
         """Load user configuration from config.json"""
         try:
-            with open('config.json', 'r') as f:
+            # Get the directory where this script is located
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            config_path = os.path.join(script_dir, 'config.json')
+            
+            with open(config_path, 'r') as f:
                 config = json.load(f)
                 return config.get('users', {})
         except FileNotFoundError:
             print("Warning: config.json not found. Using empty user list.")
             return {}
-    
-    def load_full_names_from_file(self) -> Dict[str, str]:
-        """Load full names from all-users.txt file"""
-        full_names = {}
-        try:
-            with open('all-users.txt', 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if ':' in line:
-                        full_name, username = line.split(':', 1)
-                        full_names[username] = full_name.strip()
-        except FileNotFoundError:
-            print("Warning: all-users.txt not found. Using usernames as display names.")
-        return full_names
     
     def make_graphql_request(self, query: str, variables: Dict = None) -> Dict:
         """Make a GraphQL request with file-based caching"""
@@ -527,7 +525,6 @@ class AdvancedContributionTracker:
     def track_all_users(self, start_date: datetime = None, end_date: datetime = None, days_back: int = 30) -> List[ContributionMetrics]:
         """Track contributions for all users in config"""
         users = self.load_users_config()
-        full_names = self.load_full_names_from_file()
         all_metrics = []
         total_users = len(users)
         current_user = 0
@@ -540,9 +537,8 @@ class AdvancedContributionTracker:
         
         print(f"\n🚀 Starting to track {total_users} users ({date_info})...")
         
-        for username, display_name in users.items():
+        for username, full_name in users.items():
             current_user += 1
-            full_name = full_names.get(username, display_name)
             
             try:
                 self.print_progress_bar(current_user, total_users, username, full_name)

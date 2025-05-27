@@ -1,18 +1,52 @@
-# Vulnerability Tracker Data
-data/
-Security/data/
-*/data/
-**/plots/
+# =============================================================================
+# A.C.E.S (Admin Control and Efficiency Suite) - .gitignore
+# =============================================================================
+# This file prevents sensitive data and temporary files from being committed
+# to the public repository. 
+#
+# SECURITY NOTE: This repository is PUBLIC - no PII or sensitive data should
+# be committed. All configuration files with real names/usernames are ignored.
+# =============================================================================
 
-# Ignore custom files
-*.csv
+# PII and Sensitive Configuration Files
+# =====================================
+config.json                    # Contains real usernames and names - NEVER commit
+User Management/config.json    # User config in User Management folder - NEVER commit
+**/config.json                 # Any config.json file anywhere - NEVER commit
 
-# Ignore local Cache
-CACHE/
+# API and Cache Data
+# ==================
+CACHE/                         # GitHub API cache - contains potentially sensitive data
+.cache/                        # Alternative cache directory
+*.pkl                          # Pickle files from caching
+**/.joblib_cache/              # Joblib cache files
 
-# Compiled Python files
-*.py[cod]
+# Output and Generated Files
+# ===========================
+*.csv                          # Generated reports may contain sensitive data
+data/                          # Data directories
+*/data/                        # Data in subdirectories
+**/data/                       # Data in any nested directory
+**/plots/                      # Generated visualization plots
+output/                        # Output directory
+reports/                       # Reports directory
+
+# Python Environment
+# ===================
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+ENV/
+env.bak/
+venv.bak/
+pyvenv.cfg
+
+# Python compiled files
 __pycache__/
+*.py[cod]
+*$py.class
 *.so
 *.egg
 *.egg-info/
@@ -29,37 +63,42 @@ lib/
 lib64/
 .Python
 
-# Environment and IDE files
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-.vscode/
-.idea/
-*.swp
-*~
-.project
-.pydevproject
-.settings/
-*.txt
-.csv
+# Development and IDE
+# ====================
+.vscode/                       # VS Code settings
+.idea/                         # PyCharm/IntelliJ settings
+*.swp                          # Vim swap files
+*~                            # Backup files
+.project                       # Eclipse project files
+.pydevproject                  # PyDev project files
+.settings/                     # Eclipse settings
+*.sublime-project              # Sublime Text project files
+*.sublime-workspace            # Sublime Text workspace files
 
-# OS generated files
+# Operating System
+# ================
+# macOS
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
+
+# Windows
 ehthumbs.db
 Thumbs.db
+Desktop.ini
+
+# Linux
+*~
 
 # Jupyter Notebook
+# ================
 .ipynb_checkpoints
+*.ipynb
 
-# Unit test / coverage reports
+# Testing and Coverage
+# ====================
 htmlcov/
 .tox/
 .coverage
@@ -69,7 +108,39 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+.pytest_cache/
 
-# Logs
+# Logs and Temporary Files
+# =========================
 logs/
 *.log
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Documentation Build
+# ====================
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# Backup Files
+# ============
+*.bak
+*.backup
+*.old
+
+# Security and Keys
+# =================
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+secrets.json
+
+# =============================================================================
+# END .gitignore
+# =============================================================================

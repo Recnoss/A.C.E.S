@@ -60,16 +60,22 @@ python "User Management/advanced_contribution_tracker.py" --quarter Q1-2025
 python "User Management/advanced_contribution_tracker.py" --clear-cache
 ```
 
-## Installation
+## 🚀 Quick Start
 
-1. Clone the repository to your local machine using the following command:
+### Prerequisites
+- Python 3.7+ (Python 3.9+ recommended)
+- Git
+- GitHub Personal Access Token
 
-   ```shell
-   git clone https://github.com/your-username/aces.git
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/A.C.E.S.git
+   cd A.C.E.S
    ```
 
-2. Set up Python virtual environment and install dependencies:
-
+2. **Set up Python environment:**
    ```bash
    # Create and activate virtual environment
    python -m venv venv
@@ -79,41 +85,102 @@ python "User Management/advanced_contribution_tracker.py" --clear-cache
    pip install -r requirements.txt
    ```
 
-3. Set up environment variables (for GitHub tracking):
-
+3. **Configure environment and settings:**
    ```bash
-   # Set GitHub token for API access
-   export GITHUB_TOKEN=your_github_token_here
+   # Set up environment variables
+   cp .env.template .env
+   # Edit .env with your GitHub token
    
-   # Or create a .env file in the project root
-   echo "GITHUB_TOKEN=your_github_token_here" > .env
+   # Set up configuration files  
+   cp "User Management/config.json.template" "User Management/config.json"
+   cp "User Management/all-users.txt.template" "User Management/all-users.txt"
+   # Edit config files with your organization and users
    ```
 
-4. Customize the scripts and configuration files to match your specific needs.
+4. **Test the setup:**
+   ```bash
+   # Test with a small sample
+   python "User Management/advanced_contribution_tracker.py" --days 7
+   ```
 
-## Usage
-Navigate to the desired category or specific task folder in the repository.
+**📖 For detailed setup instructions, see [SETUP.md](SETUP.md)**
 
-Review the documentation and README files associated with the script or code snippet you wish to use.
+## 📁 Project Structure
 
-Modify the script parameters or code as required to suit your environment.
+```
+A.C.E.S/
+├── 📊 User Management/           # GitHub contribution tracking and analytics
+│   ├── advanced_contribution_tracker.py
+│   ├── config.json.template      # Configuration template
+│   └── all-users.txt.template    # User mapping template
+├── 🔒 Security/                  # Vulnerability tracking and security tools
+│   └── vulnerability_tracker.py
+├── 📈 Data Analysis/            # Data processing and analysis utilities
+├── 📋 Report Generation/        # Custom report generation tools
+├── 🤖 Task Automation/          # General automation scripts
+├── 📖 Documentation/
+│   ├── SETUP.md                 # Detailed setup instructions
+│   ├── CONTRIBUTING.md          # Contribution guidelines
+│   ├── SECURITY.md              # Security policies
+│   └── CHANGELOG.md             # Version history
+└── 🔧 Configuration/
+    ├── .env.template            # Environment variables template
+    ├── requirements.txt         # Python dependencies
+    └── .gitignore              # Protects sensitive data
+```
 
-Execute the script or incorporate the code snippet into your existing workflow.
+## 🔒 Security & Privacy
 
-## Contributing
-Contributions to A.C.E.S are welcome! If you have any ideas, improvements, or new scripts/snippets to add, please follow these steps:
+**⚠️ This repository is PUBLIC** - strict security measures are in place:
 
-1. Fork the repository.
-2. Create a new branch with a descriptive name for your feature or improvement.
-3. Make your changes and ensure they adhere to the repository's coding guidelines.
-4. Test your changes thoroughly.
-5. Commit your changes and push them to your forked repository.
-6. Open a pull request, providing a clear and concise description of your changes.
-7. Discuss and address any feedback or suggestions provided.
+- **PII Protection**: All personal data is excluded via .gitignore
+- **Template System**: Example configurations use fictional data
+- **Environment Variables**: Sensitive tokens stored locally only
+- **Comprehensive Documentation**: Security guidelines in [SECURITY.md](SECURITY.md)
 
-Your contributions will be reviewed, and once approved, they will be merged into the main repository.
+## 🤝 Contributing
 
-## License
-The A.C.E.S repository is licensed under the MIT License. You are free to use, modify, and distribute the code in this repository for personal and commercial purposes. However, please review the license file for complete details and limitations.
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for:
+- Development setup instructions
+- Code style and standards
+- Security requirements
+- Pull request process
 
-With A.C.E.S, take control of your administrative tasks, improve efficiency, and streamline your workflow. Feel free to explore the repository, utilize the scripts, and contribute to make it an even more powerful suite of tools. If you encounter any issues or have suggestions, don't hesitate to reach out. Happy automating!
+## 📞 Support
+
+- **📖 Documentation**: Check [SETUP.md](SETUP.md) for detailed instructions
+- **🐛 Issues**: Report bugs via GitHub Issues
+- **💬 Discussions**: Ask questions in GitHub Discussions
+- **🔒 Security**: Email security concerns privately (see [SECURITY.md](SECURITY.md))
+
+## 📄 License
+
+The A.C.E.S repository is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute the code in this repository for personal and commercial purposes. Please review the license file for complete details and limitations.
+
+## 🎯 Project Goals
+
+A.C.E.S aims to:
+- **Automate** repetitive administrative tasks
+- **Enhance** team productivity through data-driven insights  
+- **Streamline** organizational workflows
+- **Provide** actionable analytics for decision-making
+- **Maintain** security and privacy standards
+
+## 🚀 What's Next?
+
+- Enhanced visualization dashboards
+- Additional GitHub API integrations
+- Team collaboration analytics
+- Automated report scheduling
+- Integration with other productivity tools
+
+---
+
+**With A.C.E.S, take control of your administrative tasks, improve efficiency, and streamline your workflow. Happy automating! 🎉**
+
+## 📊 Repository Stats
+
+![GitHub stars](https://img.shields.io/github/stars/your-username/A.C.E.S?style=social)
+![GitHub forks](https://img.shields.io/github/forks/your-username/A.C.E.S?style=social)
+![GitHub issues](https://img.shields.io/github/issues/your-username/A.C.E.S)
+![GitHub license](https://img.shields.io/github/license/your-username/A.C.E.S)
