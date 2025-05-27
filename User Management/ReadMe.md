@@ -4,12 +4,65 @@ This folder contains advanced scripts and tools for GitHub organization manageme
 
 ## 🚀 Featured Scripts
 
-### Advanced GitHub Contribution Tracker
+### 🔥 Advanced GitHub Contribution Tracker
 **File:** `advanced_contribution_tracker.py`
 
-A comprehensive GitHub contribution tracking system with gamification, caching, and advanced analytics.
+A comprehensive individual GitHub contribution tracking system with gamification, caching, and advanced analytics.
 
-#### **Key Features:**
+### ⭐ NEW: Team Contribution Tracker
+**File:** `team_contribution_tracker.py`
+
+A team-based GitHub contribution tracking system that aggregates individual scores into team leaderboards with configurable team filtering.
+
+#### **🌟 Team Tracker Key Features:**
+- **Configurable Teams**: Only tracks teams specified in `config.json`
+- **Multi-Organization Support**: Searches teams across multiple GitHub organizations
+- **Team Aggregation**: Combines individual contribution scores by team
+- **Team Analytics**: Total scores, averages, and detailed member breakdowns
+- **Dual CSV Export**: Separate files for team summaries and individual members by team
+- **Smart Team Discovery**: Automatically finds configured teams in specified organizations
+- **Error Handling**: Graceful handling of private teams or missing teams
+
+#### **Team Configuration:**
+Add teams to your `config.json`:
+```json
+{
+  "teams": {
+    "ssbno-developers": "Team SSB.no",
+    "microdata-developers": "Team Microdata",
+    "statbank-developers": "Team Statistikkbanken",
+    "statbank-utviklere": "Legacy Statbank"
+  }
+}
+```
+
+#### **Multi-Organization Setup:**
+```bash
+# Set environment variables for multiple organizations
+export GITHUB_ORG=statisticsnorway      # Primary organization  
+export GITHUB_ORG_2=PxTools              # Secondary organization
+```
+
+#### **Team Tracker Usage Examples:**
+```bash
+# Track team contributions for last 30 days
+python team_contribution_tracker.py
+
+# Track team contributions for last 90 days
+python team_contribution_tracker.py --days 90
+
+# Track Q1 2025 with top 3 team details
+python team_contribution_tracker.py --quarter Q1-2025 --top-teams 3
+
+# Clear cache and run fresh
+python team_contribution_tracker.py --clear-cache
+```
+
+#### **Team Output Files:**
+- `team_contributions_[period]_[timestamp]_teams.csv`: Team summary with rankings
+- `team_contributions_[period]_[timestamp]_members_by_team.csv`: Individual members organized by team
+
+#### **Individual Tracker Key Features:**
 - **Multi-source Data Collection**: GraphQL API + REST API fallback
 - **Smart Caching**: 24-hour file-based cache for optimal performance
 - **Flexible Time Ranges**: Last N days or quarterly tracking (Q1, Q2, Q3, Q4)
@@ -18,23 +71,24 @@ A comprehensive GitHub contribution tracking system with gamification, caching, 
 - **Dynamic Leaderboards**: Top 100 users with full name support
 - **Comprehensive Error Handling**: Detailed error messages with HTTP status meanings
 
-#### **Comprehensive Gamification Scoring System:**
+#### **🏆 Improved Gamification Scoring System:**
 
-Our scoring system is designed to provide a balanced assessment of both individual productivity and team collaboration. Here's how each metric is calculated and why it matters:
+Our scoring system provides a balanced assessment of individual productivity and team collaboration. **Recent improvements eliminated double-counting issues** for fair and accurate rankings:
 
 | Contribution Type | Scoring Rules | Data Source & Calculation Method |
 |------------------|---------------|----------------------------------|
-| **Commits** | 2 points each (capped at 100 points) | **Data:** GitHub GraphQL `totalCommitContributions`<br>**Method:** Direct count of commits authored in time period<br>**Cap Reasoning:** Prevents volume over quality; encourages meaningful commits |
-| **Pull Requests** | 5 base points + merge rate bonus (up to 20 points) | **Data:** GitHub GraphQL `totalPullRequestContributions` + PR state analysis<br>**Calculation:** `(PRs_opened × 5) + (merge_rate × 20)`<br>**Merge Rate:** `PRs_merged / PRs_opened`<br>**Quality Focus:** Rewards PRs that get accepted by the team |
+| **Commits** | 2 points each (capped at 100 points) | **Data:** GitHub GraphQL `totalCommitContributions` + multi-org REST fallback<br>**Method:** Direct count of commits authored across all configured organizations<br>**Cap Reasoning:** Prevents volume over quality; encourages meaningful commits |
+| **Pull Requests** | 5 base points + up to 20 merge rate bonus | **Data:** GitHub GraphQL `totalPullRequestContributions` + PR state analysis<br>**Calculation:** `(PRs_opened × 5) + (merge_rate × 20)`<br>**Merge Rate:** `PRs_merged / PRs_opened`<br>**Quality Focus:** Rewards PRs that get accepted by the team |
 | **Code Reviews** | 3 points per review + 1 point per review comment | **Data:** GitHub GraphQL `totalPullRequestReviewContributions` + comment analysis<br>**Method:** Counts reviews submitted + comments made during reviews<br>**Team Value:** Recognizes time spent helping others improve their code |
-| **Collaboration** | Combined review engagement score | **Data:** Review comments + issue discussions + PR feedback<br>**Calculation:** `(reviews_given × 3) + (review_comments × 1)`<br>**Purpose:** Measures investment in team success and knowledge sharing |
-| **Consistency** | Regular activity bonus | **Data:** Distribution of commits over time period<br>**Calculation:** `min(commits_count × 0.5, 25)`<br>**Philosophy:** Steady contribution is more valuable than sporadic bursts |
+| **Collaboration** | 10-35 bonus points for active reviewing (**NEW**) | **Data:** Review activity patterns and engagement quality<br>**Calculation:** Bonus points for active reviewers (>5 reviews: +10, >20 comments: +15, well-rounded contributor: +10)<br>**Purpose:** **No longer duplicates review scores** - rewards exceptional collaboration |
+| **Consistency** | 8 points per contribution type (max 24) (**IMPROVED**) | **Data:** Activity diversity across contribution types<br>**Calculation:** 8 points each for commits, PRs, and reviews (independent scoring)<br>**Philosophy:** **Eliminates double-counting** - rewards balanced contribution patterns |
 
 #### **Data Collection Methodology:**
 
 **🔍 Primary Data Sources:**
 - **GitHub GraphQL API:** Comprehensive contribution data with precise metrics
-- **GitHub REST API:** Fallback for detailed repository-level analysis
+- **GitHub REST API:** Fallback for detailed repository-level analysis across multiple organizations
+- **Multi-Organization Support:** Searches contributions across all configured organizations  
 - **Time-based Filtering:** All data is filtered to the specified time period (days/quarters)
 
 **📊 Specific Data Points Tracked:**
@@ -81,9 +135,9 @@ Our scoring system is designed to provide a balanced assessment of both individu
 
 **Recognition of "Invisible" Work:** Code reviews and mentoring finally get the recognition they deserve in team productivity.
 
-#### **Usage Examples:**
+#### **Individual Tracker Usage Examples:**
 ```bash
-# Track last 30 days (default)
+# Track last 30 days (default) across multiple orgs
 python advanced_contribution_tracker.py
 
 # Track last 90 days
@@ -92,11 +146,25 @@ python advanced_contribution_tracker.py --days 90
 # Track Q1 2025
 python advanced_contribution_tracker.py --quarter Q1-2025
 
-# Track Q4 2024
-python advanced_contribution_tracker.py --quarter Q4-2024
-
 # Clear cache and run fresh
 python advanced_contribution_tracker.py --clear-cache
+```
+
+#### **Combined Usage Workflow:**
+```bash
+# 1. Set up multiple organizations
+export GITHUB_ORG=statisticsnorway
+export GITHUB_ORG_2=PxTools
+
+# 2. Run individual tracking first
+python advanced_contribution_tracker.py --days 30
+
+# 3. Then run team analysis on the same period
+python team_contribution_tracker.py --days 30 --top-teams 5
+
+# 4. Compare individual vs team performance
+# Individual CSV: advanced_contributions_30days_[timestamp].csv
+# Team CSV: team_contributions_30days_[timestamp]_teams.csv
 ```
 
 #### **Requirements:**
@@ -105,10 +173,28 @@ python advanced_contribution_tracker.py --clear-cache
 - Required packages: `requests`, `pandas`, `matplotlib`, `numpy`, `joblib`, `tabulate`
 
 #### **Setup:**
-1. Set environment variable: `export GITHUB_TOKEN=your_token_here`
-2. Configure users in `config.json`
-3. Ensure `all-users.txt` contains full name mappings
-4. Run the script with desired parameters
+1. **Set environment variables:**
+   ```bash
+   export GITHUB_TOKEN=your_token_here
+   export GITHUB_ORG=your_primary_org
+   export GITHUB_ORG_2=your_secondary_org  # Optional
+   ```
+
+2. **Configure `config.json`:**
+   ```json
+   {
+     "users": {
+       "github-username": "Display Name"
+     },
+     "teams": {
+       "team-slug": "Team Display Name"
+     }
+   }
+   ```
+
+3. **Run the trackers:**
+   - Individual: `python advanced_contribution_tracker.py`
+   - Teams: `python team_contribution_tracker.py`
 
 ### Script History
 
@@ -121,8 +207,12 @@ The User Management folder previously contained legacy scripts (`org_total_commi
 
 ## Output Files
 
-The tracker generates timestamped CSV files with detailed metrics:
-- `advanced_contributions_[period]_[timestamp].csv`: Comprehensive contribution data with gamification scores
+### Individual Tracker Output:
+- `advanced_contributions_[period]_[timestamp].csv`: Comprehensive individual contribution data with gamification scores
+
+### Team Tracker Output:
+- `team_contributions_[period]_[timestamp]_teams.csv`: Team summary with rankings, totals, and averages
+- `team_contributions_[period]_[timestamp]_members_by_team.csv`: Individual members organized by team affiliation
 
 ## Cache Management
 

@@ -25,12 +25,13 @@ The repository is organized into different categories based on the nature of the
 - **Report Generation**: Custom report generation tools with CSV export capabilities
 - **Task Automation**: Scripts to automate repetitive tasks, reducing manual effort and increasing efficiency
 
-### 🚀 **New: Advanced GitHub Contribution Tracker**
+### 🚀 **New: Advanced GitHub Contribution & Team Tracking**
 
-The latest addition to A.C.E.S is a comprehensive GitHub contribution tracking system with:
+The latest addition to A.C.E.S includes both individual and team-based GitHub contribution tracking systems with:
 
-#### **Key Features:**
+#### **🔥 Individual Contribution Tracker**
 - **Multi-source Data**: GraphQL API + REST API fallback for comprehensive data
+- **Multi-Organization Support**: Track contributions across multiple GitHub organizations
 - **Smart Caching**: 24-hour file-based cache for improved performance
 - **Flexible Time Ranges**: Last N days or quarterly tracking (Q1, Q2, Q3, Q4)
 - **Real-time Progress**: Visual progress bar with user feedback
@@ -38,23 +39,55 @@ The latest addition to A.C.E.S is a comprehensive GitHub contribution tracking s
 - **Dynamic Leaderboards**: Top 100 users with full name support
 - **Error Handling**: Comprehensive error reporting with HTTP status meanings
 
-#### **Gamification Scoring:**
+#### **⭐ NEW: Team Contribution Tracker**
+- **Team-Based Rankings**: Aggregate individual scores into team leaderboards
+- **Configurable Teams**: Only track teams specified in your configuration
+- **Cross-Organization Teams**: Support teams from multiple GitHub organizations
+- **Team Analytics**: Total scores, averages, and member breakdowns
+- **Dual CSV Export**: Separate files for team summaries and member details
+
+#### **Improved Scoring System:**
 - **Commits**: 2 points each (capped at 100)
-- **Pull Requests**: 5 points + merge rate bonus (up to 20 points)
-- **Code Reviews**: 3 points each + 1 point per review comment
-- **Collaboration**: Bonus points for helping team members
-- **Consistency**: Regular activity bonuses
+- **Pull Requests**: 5 points + up to 20 merge rate bonus
+- **Code Reviews**: 3 points each + 1 per comment
+- **Collaboration**: 10-35 bonus points for active reviewing (no longer double-counted)
+- **Consistency**: 8 points per contribution type (max 24)
+
+#### **Multi-Organization Support:**
+```bash
+# Set up multiple organizations
+export GITHUB_ORG=statisticsnorway
+export GITHUB_ORG_2=PxTools
+
+# Individual tracking across both orgs
+python "User Management/advanced_contribution_tracker.py" --days 30
+
+# Team tracking across both orgs
+python "User Management/team_contribution_tracker.py" --days 30
+```
+
+#### **Team Configuration Example:**
+```json
+{
+  "teams": {
+    "ssbno-developers": "Team SSB.no",
+    "microdata-developers": "Team Microdata", 
+    "statbank-developers": "Team Statistikkbanken",
+    "statbank-utviklere": "Legacy Statbank"
+  }
+}
+```
 
 #### **Usage Examples:**
 ```bash
-# Track last 30 days (default)
+# Individual tracking (last 30 days, multiple orgs)
 python "User Management/advanced_contribution_tracker.py"
 
-# Track last 90 days
-python "User Management/advanced_contribution_tracker.py" --days 90
+# Team tracking with top 3 team details
+python "User Management/team_contribution_tracker.py" --top-teams 3
 
-# Track Q1 2025
-python "User Management/advanced_contribution_tracker.py" --quarter Q1-2025
+# Track Q1 2025 for teams
+python "User Management/team_contribution_tracker.py" --quarter Q1-2025
 
 # Clear cache and run fresh
 python "User Management/advanced_contribution_tracker.py" --clear-cache
@@ -88,19 +121,34 @@ python "User Management/advanced_contribution_tracker.py" --clear-cache
 3. **Configure environment and settings:**
    ```bash
    # Set up environment variables
-   cp .env.template .env
-   # Edit .env with your GitHub token
+   export GITHUB_TOKEN=your_token_here
+   export GITHUB_ORG=your_primary_org
+   export GITHUB_ORG_2=your_secondary_org  # Optional
    
    # Set up configuration files  
-   cp "User Management/config.json.template" "User Management/config.json"
-   cp "User Management/all-users.txt.template" "User Management/all-users.txt"
-   # Edit config files with your organization and users
+   cp config.json.template config.json
+   # Edit config.json with your users and teams
    ```
 
-4. **Test the setup:**
+4. **Configure teams and users in config.json:**
+   ```json
+   {
+     "users": {
+       "github-username": "Display Name"
+     },
+     "teams": {
+       "team-slug": "Team Display Name"
+     }
+   }
+   ```
+
+5. **Test the setup:**
    ```bash
-   # Test with a small sample
+   # Test individual tracking
    python "User Management/advanced_contribution_tracker.py" --days 7
+   
+   # Test team tracking
+   python "User Management/team_contribution_tracker.py" --days 7
    ```
 
 **📖 For detailed setup instructions, see [SETUP.md](SETUP.md)**
@@ -110,11 +158,10 @@ python "User Management/advanced_contribution_tracker.py" --clear-cache
 ```
 A.C.E.S/
 ├── 📊 User Management/           # GitHub contribution tracking and analytics
-│   ├── advanced_contribution_tracker.py
-│   ├── config.json.template      # Configuration template
-│   └── all-users.txt.template    # User mapping template
+│   ├── advanced_contribution_tracker.py  # Individual contributor tracking
+│   ├── team_contribution_tracker.py      # Team-based contribution tracking
+│   └── ReadMe.md                          # User Management documentation
 ├── 🔒 Security/                  # Vulnerability tracking and security tools
-│   └── vulnerability_tracker.py
 ├── 📈 Data Analysis/            # Data processing and analysis utilities
 ├── 📋 Report Generation/        # Custom report generation tools
 ├── 🤖 Task Automation/          # General automation scripts
@@ -124,8 +171,9 @@ A.C.E.S/
 │   ├── SECURITY.md              # Security policies
 │   └── CHANGELOG.md             # Version history
 └── 🔧 Configuration/
-    ├── .env.template            # Environment variables template
+    ├── config.json.template     # Configuration template (users + teams)
     ├── requirements.txt         # Python dependencies
+    ├── CLAUDE.md                # AI assistant instructions
     └── .gitignore              # Protects sensitive data
 ```
 
@@ -168,11 +216,14 @@ A.C.E.S aims to:
 
 ## 🚀 What's Next?
 
+- ✅ **Team-based contribution tracking** (Recently Added!)
+- ✅ **Multi-organization support** (Recently Added!)
+- ✅ **Improved scoring system** (Recently Added!)
 - Enhanced visualization dashboards
-- Additional GitHub API integrations
-- Team collaboration analytics
+- Historical trend analysis
 - Automated report scheduling
 - Integration with other productivity tools
+- Team collaboration heat maps
 
 ---
 

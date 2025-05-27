@@ -59,6 +59,7 @@ import pickle
 
 # Configuration Constants
 ORG_NAME = os.getenv('GITHUB_ORG', 'statisticsnorway')  # GitHub organization name from env variable
+ORG_NAME_2 = os.getenv('GITHUB_ORG_2')  # Optional second organization
 CACHE_DIR = "CACHE"            # Directory for file-based cache storage
 CACHE_EXPIRY_HOURS = 24        # Cache expiry time in hours
 memory = Memory(CACHE_DIR, verbose=0)  # Legacy joblib memory (kept for compatibility)
@@ -126,6 +127,11 @@ class AdvancedContributionTracker:
         }
         self.base_url = 'https://api.github.com'
         self.graphql_url = 'https://api.github.com/graphql'
+        
+        # Set up organizations to track
+        self.organizations = [ORG_NAME]
+        if ORG_NAME_2:
+            self.organizations.append(ORG_NAME_2)
         
         # Ensure cache directory exists
         os.makedirs(CACHE_DIR, exist_ok=True)
@@ -361,78 +367,86 @@ class AdvancedContributionTracker:
         return self.make_graphql_request(query, variables)
     
     def get_user_reviews_rest(self, username: str, start_date: str) -> List[Dict]:
-        """Get detailed review information using REST API"""
-        # Search for reviews by user in the organization
-        search_query = f"reviewed-by:{username} org:{ORG_NAME} created:>={start_date}"
-        
-        response = self.make_rest_request(
-            'search/issues',
-            {'q': search_query, 'sort': 'created', 'order': 'desc'}
-        )
-        
+        """Get detailed review information using REST API across all organizations"""
         reviews = []
-        for item in response.get('items', []):
-            if item.get('pull_request'):
-                reviews.append({
-                    'title': item['title'],
-                    'number': item['number'],
-                    'repository': item['repository_url'].split('/')[-1],
-                    'created_at': item['created_at']
-                })
+        
+        # Search for reviews by user in each organization
+        for org_name in self.organizations:
+            search_query = f"reviewed-by:{username} org:{org_name} created:>={start_date}"
+            
+            response = self.make_rest_request(
+                'search/issues',
+                {'q': search_query, 'sort': 'created', 'order': 'desc'}
+            )
+            
+            for item in response.get('items', []):
+                if item.get('pull_request'):
+                    reviews.append({
+                        'title': item['title'],
+                        'number': item['number'],
+                        'repository': item['repository_url'].split('/')[-1],
+                        'created_at': item['created_at'],
+                        'org_name': org_name
+                    })
         
         return reviews
     
     def get_repository_contributions(self, username: str, start_date: datetime) -> Dict:
-        """Fallback method: iterate through repositories to get contributions"""
-        # Get organization repositories
-        repos_response = self.make_rest_request(f'orgs/{ORG_NAME}/repos', {'per_page': 100})
-        
+        """Fallback method: iterate through repositories in all organizations to get contributions"""
         total_commits = 0
         total_prs = 0
         repositories_contributed = set()
         
-        for repo in repos_response:
-            if repo.get('archived') or repo.get('fork'):
+        # Check contributions across all configured organizations
+        for org_name in self.organizations:
+            # Get organization repositories
+            repos_response = self.make_rest_request(f'orgs/{org_name}/repos', {'per_page': 100})
+            
+            if not repos_response:
                 continue
                 
-            repo_name = repo['name']
-            
-            # Get commits by user in this repository
-            commits_response = self.make_rest_request(
-                f'repos/{ORG_NAME}/{repo_name}/commits',
-                {
-                    'author': username,
-                    'since': start_date.isoformat(),
-                    'per_page': 100
-                }
-            )
-            
-            if commits_response:
-                repo_commits = len(commits_response)
-                if repo_commits > 0:
-                    total_commits += repo_commits
-                    repositories_contributed.add(repo_name)
-            
-            # Get pull requests by user in this repository
-            prs_response = self.make_rest_request(
-                f'repos/{ORG_NAME}/{repo_name}/pulls',
-                {
-                    'creator': username,
-                    'state': 'all',
-                    'sort': 'created',
-                    'direction': 'desc',
-                    'per_page': 100
-                }
-            )
-            
-            if prs_response:
-                # Filter PRs by date
-                recent_prs = []
-                for pr in prs_response:
-                    pr_date = datetime.fromisoformat(pr['created_at'].replace('Z', '+00:00')).replace(tzinfo=None)
-                    if pr_date >= start_date:
-                        recent_prs.append(pr)
-                total_prs += len(recent_prs)
+            for repo in repos_response:
+                if repo.get('archived') or repo.get('fork'):
+                    continue
+                    
+                repo_name = repo['name']
+                
+                # Get commits by user in this repository
+                commits_response = self.make_rest_request(
+                    f'repos/{org_name}/{repo_name}/commits',
+                    {
+                        'author': username,
+                        'since': start_date.isoformat(),
+                        'per_page': 100
+                    }
+                )
+                
+                if commits_response:
+                    repo_commits = len(commits_response)
+                    if repo_commits > 0:
+                        total_commits += repo_commits
+                        repositories_contributed.add(f"{org_name}/{repo_name}")
+                
+                # Get pull requests by user in this repository
+                prs_response = self.make_rest_request(
+                    f'repos/{org_name}/{repo_name}/pulls',
+                    {
+                        'creator': username,
+                        'state': 'all',
+                        'sort': 'created',
+                        'direction': 'desc',
+                        'per_page': 100
+                    }
+                )
+                
+                if prs_response:
+                    # Filter PRs by date
+                    recent_prs = []
+                    for pr in prs_response:
+                        pr_date = datetime.fromisoformat(pr['created_at'].replace('Z', '+00:00')).replace(tzinfo=None)
+                        if pr_date >= start_date:
+                            recent_prs.append(pr)
+                    total_prs += len(recent_prs)
         
         return {
             'total_commits': total_commits,
@@ -655,7 +669,8 @@ def main():
         os.makedirs(CACHE_DIR, exist_ok=True)
     
     print("🚀 Starting Advanced GitHub Contribution Tracking...")
-    print(f"Organization: {ORG_NAME}")
+    organizations_str = ', '.join(tracker.organizations)
+    print(f"Organizations: {organizations_str}")
     
     start_date = None
     end_date = None

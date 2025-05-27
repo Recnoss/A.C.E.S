@@ -75,6 +75,8 @@ lib64/
 *.sublime-project              # Sublime Text project files
 *.sublime-workspace            # Sublime Text workspace files
 CLAUDE.md                      # Antropic Clauds operating instructions. 
+*.csv
+*-config.json
 
 # Operating System
 # ================
@@ -145,4 +147,3 @@ secrets.json
 # =============================================================================
 # END .gitignore
 # =============================================================================
-
