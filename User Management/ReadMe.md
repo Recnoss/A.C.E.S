@@ -28,10 +28,7 @@ Add teams to your `config.json`:
 ```json
 {
   "teams": {
-    "ssbno-developers": "Team SSB.no",
-    "microdata-developers": "Team Microdata",
-    "statbank-developers": "Team Statistikkbanken",
-    "statbank-utviklere": "Legacy Statbank"
+    "some-team-x5512_devs": "Team Bagers"
   }
 }
 ```
@@ -39,8 +36,8 @@ Add teams to your `config.json`:
 #### **Multi-Organization Setup:**
 ```bash
 # Set environment variables for multiple organizations
-export GITHUB_ORG=statisticsnorway      # Primary organization  
-export GITHUB_ORG_2=PxTools              # Secondary organization
+export GITHUB_ORG=parts_unlimited      # Primary organization  
+export GITHUB_ORG_2=Org2u              # Secondary organization
 ```
 
 #### **Team Tracker Usage Examples:**
@@ -153,8 +150,8 @@ python advanced_contribution_tracker.py --clear-cache
 #### **Combined Usage Workflow:**
 ```bash
 # 1. Set up multiple organizations
-export GITHUB_ORG=statisticsnorway
-export GITHUB_ORG_2=PxTools
+export GITHUB_ORG=org1
+export GITHUB_ORG_2=org2
 
 # 2. Run individual tracking first
 python advanced_contribution_tracker.py --days 30
